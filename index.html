@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tutor & Student Login </title>
+</head>
+<body>
+  <div id="loginSection">
+    <h2>Login</h2>    
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+    
+    <div id="result"></div>
+</div>
+
+<div id="tutorMarketplace">
+	<button onclick="loadAllTutors()">Browse All Tutors</button>
+
+	<div class="content">
+
+	<div id="tutorList"></div> 
+</div>
+<!--
+<div id="tutorMarketplace">
+    <h2>Find a Tutor</h2>
+    <button onclick="loadTutors()">Browse All Tutors</button>
+    <div id="tutorList"></div>
+</div>
+-->
+
+
+<!-- Tutor Profile Creation Form -->
+<div id="tutorProfileSection" style="display: none;">
+    <h2>Create Your Tutor Profile</h2>
+    <form id="tutorProfileForm">
+        <textarea id="bio" placeholder="Tell students about yourself, list the subjects you teach, your experience, teaching style..." rows="4" required></textarea>
+        <input type="number" id="hourlyRate" placeholder="Hourly Rate ($)" min="10" max="200" step="0.50" required>
+        <input type="tel" id="phone" placeholder="Phone Number (optional)">
+        <button type="submit">Create Profile</button>
+    </form>
+    <div id="profileResult"></div>
+</div>
+<!--show all  Tutor -->
+
+
+<!-- Registration Form -->
+<div id="registerSection">
+    <h2>Create Account</h2>
+    <form id="registerForm">
+        <input type="email" id="regEmail" placeholder="Email" required>
+        <input type="password" id="regPassword" placeholder="Password" required>
+        <select id="regRole" required>
+            <option value="">Choose your role</option>
+            <option value="student">I'm a Student</option>
+            <option value="tutor">I'm a Tutor</option>
+        </select>
+        <button type="submit">Sign Up</button>
+    </form>
+    <div id="registerResult"></div>
+</div>
+<!--search tutors 7.12-->
+<div id="tutorMarketplace">
+    <h2>Find a Tutor</h2>
+    
+    <!-- Search form -->
+    <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+        <input type="text" id="subjectSearch" placeholder="Search by subject (e.g., Math, Physics, Chemistry)" style="padding: 8px; width: 300px;">
+<!--price search 7.13 end @ select -->
+    <select id="priceFilter" style="padding: 8px; margin-left: 10px;">
+        <option value="">Any Price</option>
+        <option value="under20">Under $20/hour</option>
+        <option value="20to30">$20-30/hour</option>
+        <option value="30to50">$30-50/hour</option>
+        <option value="over50">Over $50/hour</option>
+    </select>
+        <button onclick="searchTutors()">Search</button>
+        <button onclick="loadAllTutors()">Show All</button>
+    </div>
+    
+    <div id="tutorList"></div>
+</div>
+<!-- Study Resources Section 7.13 -->
+<div id="resourcesSection" style="display: none;">
+    <h2>Add Study Resource</h2>
+    <form id="resourceForm">
+        <input type="text" id="resourceTitle" placeholder="Resource Title" required>
+        <input type="url" id="resourceUrl" placeholder="https://..." required>
+        
+        <select id="resourceSubject" required>
+            <option value="">Select Subject</option>
+            <option value="French">French</option>
+            <option value="Math">Math</option>
+            <option value="Programming">Programing</option>
+            <option value="English">English</option>
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Biology">Biology</option>
+        </select>
+        
+        <select id="resourceLevel" required>
+            <option value="">Select Level</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+        </select>
+        
+        <select id="resourceType" required>
+            <option value="">Select Type</option>
+            <option value="Video">Video</option>
+            <option value="Practice">Practice Problems</option>
+            <option value="Article">Article</option>
+            <option value="Course">Full Course</option>
+        </select>
+        
+        <textarea id="resourceDescription" placeholder="Brief description of this resource..."></textarea>
+        <button type="submit">Add Resource</button>
+    </form>
+    <div id="resourceResult"></div>
+</div>
+
+<!-- Browse Resources Section 7.13 companion to the //load all resources in script -->
+<div id="browseResourcesSection" style="display: none;">
+    <h2>Study Resources</h2>
+    
+    <!-- Filters -->
+    <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+        <select id="resourceSubjectFilter">
+            <option value="">Select Subject</option>
+            <option value="">All Subjects</option>
+            <option value="French">French</option>
+            <option value="Math">Math</option>
+            <option value="Programming">Programing</option>
+            <option value="English">English</option>
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Biology">Biology</option>
+        </select>
+        
+        <select id="resourceLevelFilter">
+            <option value="">All Levels</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+        </select>
+        
+        <button onclick="filterResources()">Filter</button>
+        <button onclick="loadAllResources()">Show All</button>
+    </div>
+    
+    <div id="resourcesList"></div>
+</div>
+<!-- Music Resources Section 7.15 -->
+<div id="musicResourcesSection" style="display: none;">
+    <h2>Add Music Resource</h2>
+    <form id="musicResourceForm">
+        <input type="text" id="musicTitle" placeholder="Song/Playlist Title" required>
+        <input type="url" id="musicUrl" placeholder="https://spotify.com/... or YouTube link" required>
+        
+        <select id="musicType" required>
+            <option value="">Select Type</option>
+            <option value="Focus Music">Focus Music</option>
+            <option value="Study Playlist">Study Playlist</option>
+            <option value="Background Sounds">Background Sounds</option>
+            <option value="Hype Music">Hype Music</option>
+            <option value="Just Good Music">Just Good Music</option>
+            <option value="Other">Other</option>
+
+        </select>
+        
+        <select id="musicGenre">
+            <option value="">Select Genre (Optional)</option>
+            <option value="Electronic">Electronic</option>
+            <option value="Chill">Chill</option>
+            <option value="Classical">Classical</option>
+            <option value="Lo-fi">Lo-fi</option>
+            <option value="Nature Sounds">Nature Sounds</option>
+            <option value="Jazz">Jazz</option>
+            <option value="Ambient">Ambient</option>
+            <option value="Good Vibes">Good Vibes</option>
+
+        </select>
+        
+        <select id="musicLanguage">
+            <option value="">Select Language (Optional)</option>
+            <option value="Instrumental">Instrumental</option>
+            <option value="English">English</option>
+            <option value="Spanish">Spanish</option>
+            <option value="French">French</option>
+            <option value="Mix">Mix</option>
+            <option value="Other">Other</option>
+
+
+        </select>
+        
+        <input type="text" id="musicDuration" placeholder="Duration (e.g., 30 min, 2 hours, Playlist)">
+        <textarea id="musicDescription" placeholder="Why is this good for studying?"></textarea>
+        
+        <button type="submit">Add Music Resource</button>
+    </form>
+    <div id="musicResourceResult"></div>
+</div>
+
+<!-- Browse Music Resources Section 7.15-->
+<div id="browseMusicSection" style="display: none;">
+    <h2>Study Music Library</h2>
+    
+    <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+        <select id="musicTypeFilter">
+            <option value="">All Types</option>
+            <option value="Focus Music">Focus Music</option>
+            <option value="Study Playlist">Study Playlist</option>
+            <option value="Background Sounds">Background Sounds</option>
+            <option value="Hype Music">Hype Music</option>
+            <option value="Just Good Music">Just Good Music</option>
+            <option value="Other">Other</option>
+
+
+        </select>
+        
+        <select id="musicGenreFilter">
+            <option value="">All Genres</option>
+            <option value="Electronic">Electronic</option>
+            <option value="Chill">Chill</option>
+            <option value="Classical">Classical</option>
+            <option value="Lo-fi">Lo-fi</option>
+            <option value="Nature Sounds">Nature Sounds</option>
+            <option value="Jazz">Jazz</option>
+            <option value="Ambient">Ambient</option>
+            <option value="Good Vibes">Good Vibes</option>
+
+
+        </select>
+        
+        <button onclick="filterMusic()">Filter</button>
+        <button onclick="loadAllMusic()">Show All</button>
+    </div>
+    
+    <div id="musicList"></div>
+</div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Stop form from refreshing page
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); // This prevents URL changes was having ? at the end             
+            // Get form values
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // Call your API
+	     const response = await fetch('/tutor-api/auth/login',{		
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Show result
+                const resultDiv = document.getElementById('result');
+              //  if (data.success) {
+                //    resultDiv.innerHTML = `<div class="success">Login successful! Welcome ${data.user.email}</div>`;
+
+		if (data.success) {
+    // Save token to browser storage
+    localStorage.setItem('authToken', data.token);
+    localStorage.setItem('userEmail', data.user.email);
+    
+    // Show success and update UI
+    resultDiv.innerHTML = `<div class="success">Login successful! Welcome ${data.user.email}</div>`;
+    
+    //hide stuff once logged in
+    checkLoginStatus();
+
+    // Hide login form, show logged-in content
+    document.getElementById('loginForm').style.display = 'none';
+    showLoggedInContent();
+                } else {
+                    resultDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                }
+                
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<div class="error">Connection error: ${error.message}</div>`;
+            }
+});
+        }); 
+
+//content when login and remember 
+function checkLoginStatus() {
+    const token = localStorage.getItem('authToken');
+    const userEmail = localStorage.getItem('userEmail');
+    
+    if (token && userEmail) {
+        // User has a token, they're logged in
+        document.getElementById('loginForm').style.display = 'none';
+        showLoggedInContent();
+        hideLoginSections();        // Added this 7.15
+        showLoggedInContent();
+    } else {
+        // No token, show login form
+        document.getElementById('loginForm').style.display = 'block';
+        hideLoggedInContent();
+        showLoginSections();        // ← Added this 7.15
+        hideLoggedInContent();
+    }
+}
+
+
+function showLoggedInContent() {
+    const userEmail = localStorage.getItem('userEmail');
+    
+    // Create logged-in UI
+    const loggedInDiv = document.createElement('div');
+    loggedInDiv.id = 'loggedInContent';
+    loggedInDiv.innerHTML = `
+        <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h2>Welcome back, ${userEmail}!</h2>
+            <button onclick="viewProfile()">My Profile</button>
+	   <!--deleted the brose all tutors 7.16 but is still shows broswer-->
+<!--           <button onclick="showTutorMarketplace()">Browse Tutors</button>-->
+            <button onclick="logout()">Logout</button>
+        </div>
+    `;
+    
+    // Add it to the page if not already there
+    if (!document.getElementById('loggedInContent')) {
+        document.body.appendChild(loggedInDiv);
+    }
+}
+
+
+//addedhideLogin sec and shloWloginSec 7.15
+function hideLoginSections() {
+    document.getElementById('loginSection').style.display = 'none';     // Hide login + heading
+    document.getElementById('registerSection').style.display = 'none';
+}
+
+function showLoginSections() {
+    document.getElementById('loginSection').style.display = 'block';    // Show login + heading
+    document.getElementById('registerSection').style.display = 'block';
+}
+
+
+function hideLoggedInContent() {
+    const content = document.getElementById('loggedInContent');
+    if (content) {
+        content.remove();
+    }
+}
+//login con
+
+function showLoggedInContent() {
+    const userEmail = localStorage.getItem('userEmail');
+    
+    const loggedInDiv = document.createElement('div');
+    loggedInDiv.id = 'loggedInContent';
+    loggedInDiv.innerHTML = `
+
+        <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h2>Welcome back, ${userEmail}!</h2>
+            <button onclick="viewProfile()">My Profile</button>
+<!--            <button onclick="showTutorMarketplace()">Find Tutors</button>-->
+            <button onclick="showTutorProfileOption()">Create Tutor Profile</button>
+            <button onclick="editProfile()">Edit Profile</button>
+            <button onclick="showResourcesSection()">Add Study Resource</button>
+            <button onclick="showBrowseResourcesSection()">Browse Resources</button>
+            <button onclick="showMusicResourcesSection()">Add Study Music</button>
+            <button onclick="showBrowseMusicSection()">Browse Study Music Library</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+    `;
+    
+    if (!document.getElementById('loggedInContent')) {
+        document.body.appendChild(loggedInDiv);
+    }
+}
+// A close button to sections 7.16
+function addCloseButton(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section && !section.querySelector('.close-button')) {
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '✕ Close';
+        closeBtn.className = 'close-button';
+        closeBtn.style.cssText = 'float: right; background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 10px;';
+        closeBtn.onclick = () => {
+            section.style.display = 'none';
+        };
+        section.insertBefore(closeBtn, section.firstChild);
+    }
+}
+
+// Check login status when page loads
+window.onload = function() {
+    checkLoginStatus();
+};
+
+//make buttons work so user logout and goes to profile 
+async function viewProfile() {
+    const token = localStorage.getItem('authToken');
+    
+    try {
+        const response = await fetch('/tutor-api/profile', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.user) {
+            alert(`Profile: ${data.user.email} (Role: ${data.user.role})`);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        alert('Connection error: ' + error.message);
+    }
+}
+
+function logout() {
+    // Clear stored token
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
+    
+    // Refresh the page to show login form
+    location.reload();
+}
+
+// Show tutor profile form for logged-in users
+function showTutorProfileOption() {
+    const tutorSection = document.getElementById('tutorProfileSection');
+    tutorSection.style.display = 'block';
+    addCloseButton('tutorProfileSection');  // ← Added 7.16
+
+}
+
+// Handle tutor profile form submission
+document.getElementById('tutorProfileForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); // Stop form from refreshing page
+    
+    // Get form values using getElementById
+    const bio = document.getElementById('bio').value;
+    const hourlyRate = document.getElementById('hourlyRate').value;
+    const phone = document.getElementById('phone').value;
+    const token = localStorage.getItem('authToken');
+
+//edit form handler 7.17 ends @ method
+const isEditMode = document.getElementById('tutorProfileForm').dataset.mode === 'edit';
+const method = isEditMode ? 'PUT' : 'POST';
+
+    try {
+        const response = await fetch('/tutor-api/tutor-profile', {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                bio: bio,
+                hourly_rate: hourlyRate,
+                phone: phone
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Show result using getElementById
+        const resultDiv = document.getElementById('profileResult');
+        if (data.success) {
+            resultDiv.innerHTML = '<div style="color: green;">Profile created successfully!</div>';
+            document.getElementById('tutorProfileForm').reset(); // Clear form
+        } else {
+            resultDiv.innerHTML = '<div style="color: red;">Error: ' + data.error + '</div>';
+        }
+        
+    } catch (error) {
+        document.getElementById('profileResult').innerHTML = '<div style="color: red;">Connection error</div>';
+    }
+ 
+});
+
+
+
+//show all tutors 
+async function loadAllTutors() {  // <- renamed from loadTutors
+    try {
+        const response = await fetch('/tutor-api/tutors');
+        const data = await response.json();
+        displayTutors(data);  // <- use the new display function
+
+    } catch (error) {
+
+        document.getElementById('tutorList').innerHTML = '<p>Error loading tutors.</p>';
+    }
+}
+
+//new display tutor updated w/ hide button 7.16
+function displayTutors(data) {
+    const tutorListDiv = document.getElementById('tutorList');
+    
+    if (data.success && data.tutors.length > 0) {
+        // Build tutors first
+        const tutorCards = data.tutors.map(tutor => `
+            <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                <h3>${tutor.email}</h3>
+                <p><strong>About:</strong> ${tutor.bio}</p>
+                <p><strong>Rate:</strong> $${tutor.hourly_rate}/hour</p>
+                <p><strong>Phone:</strong> ${tutor.phone || 'Not provided'}</p>
+                <button onclick="showContact('${tutor.email}', '${tutor.phone}')">Contact This Tutor</button>
+            </div>
+        `).join('');
+        
+        // Combine button + tutors with proper structure
+        const fullContent = `
+            <div style="margin-bottom: 15px;">
+                <button onclick="hideTutorResults()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Hide Results</button>
+            </div>
+            ${tutorCards}
+        `;
+        
+        tutorListDiv.innerHTML = fullContent;
+    } else {
+        tutorListDiv.innerHTML = '<p>No tutors found.</p>';
+    }
+}
+
+//7.16
+function hideTutorResults() {
+    document.getElementById('tutorList').innerHTML = '';
+}
+
+// Show marketplace to everyone (no login required)
+function showTutorMarketplace() {
+    document.getElementById('tutorMarketplace').style.display = 'block';
+    addCloseButton('tutorMarketplace');
+    console.log(typeof showTutorMarketplace);
+
+}
+
+// sign-up Handle registration form submission
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    addCloseButton('tutorMarketplace');  // ← Added 7.16
+
+    // Get form values
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const role = document.getElementById('regRole').value;
+    
+    try {
+        const response = await fetch('/tutor-api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+                role: role
+            })
+        });
+        
+        const data = await response.json();
+        const resultDiv = document.getElementById('registerResult');
+        
+        if (data.success) {
+            resultDiv.innerHTML = '<div style="color: green;">Account created! You can now log in.</div>';
+            document.getElementById('registerForm').reset();
+        } else {
+            resultDiv.innerHTML = '<div style="color: red;">Error: ' + data.error + '</div>';
+        }
+        
+    } catch (error) {
+        document.getElementById('registerResult').innerHTML = '<div style="color: red;">Connection error</div>';
+    }
+
+});
+
+
+//contact tutor 7.12
+function showContact(email, phone) {
+    const contactInfo = `
+        <strong>Contact Information:</strong><br>
+        Email: ${email}<br>
+        Phone: ${phone || 'Not provided'}<br><br>
+        <em>Send them an email or call to discuss tutoring sessions!</em>
+    `;
+    
+    alert(contactInfo);
+}
+
+//idthink this works rn
+async function editProfile(){
+
+    const token = localStorage.getItem('authToken');
+    addCloseButton('tutorProfileSection'); //added 7.16
+
+
+    try{
+	//get their info from server
+	const response = await fetch('/tutor-api/my-tutor-profile',{
+	   headers: {'Authorization': 'Bearer ' +token }
+	});
+
+	const data = await response.json();
+
+	if (data.success) {
+            document.getElementById('tutorProfileSection').style.display = 'block';
+
+	   document.getElementById('bio').value = data.profile.bio;
+	   document.getElementById('hourlyRate').value = data.profile.hourly_rate;
+	   document.getElementById('phone').value = data.profile.phone;
+//change button text
+	   const button = document.querySelector('#tutorProfileForm button');
+	   button.textContent = 'Update profile';
+
+            document.getElementById('tutorProfileForm').dataset.mode = 'edit';
+
+  }
+}catch (error) {
+	alert('Error loading profile');
+ }
+}
+
+//search tutor by subjecct 7.12 deleted and replaced by price and subject search 
+async function searchTutors() {
+    const subject = document.getElementById('subjectSearch').value.trim();
+    const priceFilter = document.getElementById('priceFilter').value;
+    
+    // Build URL with multiple parameters
+    let url = '/tutor-api/tutors?';
+    const params = [];
+    
+    if (subject) {
+        params.push(`subject=${encodeURIComponent(subject)}`);
+    }
+    
+    if (priceFilter) {
+        params.push(`price=${priceFilter}`);
+    }
+    
+    // If no filters, just load all tutors
+    if (params.length === 0) {
+        loadAllTutors();
+        return;
+    }
+    
+    url += params.join('&'); // Creates: ?subject=math&price=under20
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        displayTutors(data);
+    } catch (error) {
+        console.error('Search error:', error);
+        document.getElementById('tutorList').innerHTML = '<p>Error searching tutors.</p>';
+    }
+}
+
+//toggle down 7.16 
+function toggleSection(sectionId) {
+    console.log('Trying to toggle:', sectionId);
+    const section = document.getElementById(sectionId);
+    console.log('Found section:', section);
+    
+    if (!section) {
+        console.log('Section not found!');
+        return;
+    }
+    
+    if (section.style.display === 'none' || section.style.display === '') {
+        hideAllSections();
+        section.style.display = 'block';
+        console.log('Showing section');
+        
+        // Load content when showing specific sections
+        if (sectionId === 'tutorMarketplace') {
+            loadAllTutors();  // Load tutors when showing marketplace
+        } else if (sectionId === 'browseResourcesSection') {
+            loadAllResources();  // Load resources when showing browse resources
+        } else if (sectionId === 'browseMusicSection') {
+            loadAllMusic();  // Load music when showing browse music
+        }
+        
+    } else {
+        section.style.display = 'none';
+        console.log('Hiding section');
+    }
+}
+
+function hideAllSections() {
+    document.getElementById('tutorProfileSection').style.display = 'none';
+    document.getElementById('tutorMarketplace').style.display = 'none';
+    document.getElementById('resourcesSection').style.display = 'none';
+    document.getElementById('browseResourcesSection').style.display = 'none';
+    document.getElementById('musicResourcesSection').style.display = 'none';
+    document.getElementById('browseMusicSection').style.display = 'none';
+}
+
+// Handle study resource form submission 7.13
+document.getElementById('resourceForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Get form values
+    const title = document.getElementById('resourceTitle').value;
+    const url = document.getElementById('resourceUrl').value;
+    const subject = document.getElementById('resourceSubject').value;
+    const level = document.getElementById('resourceLevel').value;
+    const type = document.getElementById('resourceType').value;
+    const description = document.getElementById('resourceDescription').value;
+    const token = localStorage.getItem('authToken');
+    
+    try {
+        const response = await fetch('/tutor-api/study-resources', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                title: title,
+                url: url,
+                subject: subject,
+                level: level,
+                type: type,
+                description: description
+            })
+        });
+        
+        const data = await response.json();
+        const resultDiv = document.getElementById('resourceResult');
+        
+        if (data.success) {
+            resultDiv.innerHTML = '<div style="color: green;">Resource added successfully!</div>';
+            document.getElementById('resourceForm').reset(); // Clear form
+        } else {
+            resultDiv.innerHTML = '<div style="color: red;">Error: ' + data.error + '</div>';
+        }
+        
+    } catch (error) {
+        document.getElementById('resourceResult').innerHTML = '<div style="color: red;">Connection error</div>';
+    }
+});
+
+// Function to show the resources section
+function showResourcesSection() {
+    document.getElementById('resourcesSection').style.display = 'block';
+}
+    addCloseButton('resourcesSection');  // ← Add this line
+
+// Load all resources- 7.13 companion to the html above 
+async function loadAllResources() {
+    try {
+        const response = await fetch('/tutor-api/study-resources');
+        const data = await response.json();
+        displayResources(data);
+    } catch (error) {
+        document.getElementById('resourcesList').innerHTML = '<p>Error loading resources.</p>';
+    }
+}
+
+// Filter resources
+async function filterResources() {
+    const subject = document.getElementById('resourceSubjectFilter').value;
+    const level = document.getElementById('resourceLevelFilter').value;
+    
+    let url = '/tutor-api/study-resources?';
+    const params = [];
+    
+    if (subject) params.push(`subject=${subject}`);
+    if (level) params.push(`level=${level}`);
+    
+    url += params.join('&');
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        displayResources(data);
+    } catch (error) {
+        document.getElementById('resourcesList').innerHTML = '<p>Error filtering resources.</p>';
+    }
+}
+
+// Display resources
+function displayResources(data) {
+    const resourcesListDiv = document.getElementById('resourcesList');
+    
+    if (data.success && data.resources.length > 0) {
+        const resourceCards = data.resources.map(resource => `
+            <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                <h3><a href="${resource.url}" target="_blank">${resource.title}</a></h3>
+                <p><strong>Subject:</strong> ${resource.subject} | <strong>Level:</strong> ${resource.level} | <strong>Type:</strong> ${resource.type}</p>
+                <p>${resource.description || 'No description provided'}</p>
+                <small>Added by: ${resource.added_by_email || 'Unknown'}</small>
+            </div>
+        `).join('');
+        
+        resourcesListDiv.innerHTML = resourceCards;
+    } else {
+        resourcesListDiv.innerHTML = '<p>No resources found.</p>';
+    }
+}
+
+// Show browse resources section
+function showBrowseResourcesSection() {
+    document.getElementById('browseResourcesSection').style.display = 'block';
+    loadAllResources(); // Auto-load when section opens
+    addCloseButton('browseResourcesSection');  // ← Added 7.16
+
+}                                    
+
+
+// Handle music resource form submission 7.15
+document.getElementById('musicResourceForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const title = document.getElementById('musicTitle').value;
+    const url = document.getElementById('musicUrl').value;
+    const music_type = document.getElementById('musicType').value;
+    const genre = document.getElementById('musicGenre').value;
+    const language = document.getElementById('musicLanguage').value;
+    const duration = document.getElementById('musicDuration').value;
+    const description = document.getElementById('musicDescription').value;
+    const token = localStorage.getItem('authToken');
+    
+    try {
+        const response = await fetch('/tutor-api/music-resources', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                title, url, music_type, genre, language, duration, description
+            })
+        });
+        
+        const data = await response.json();
+        const resultDiv = document.getElementById('musicResourceResult');
+        
+        if (data.success) {
+            resultDiv.innerHTML = '<div style="color: green;">Music resource added successfully!</div>';
+            document.getElementById('musicResourceForm').reset();
+        } else {
+            resultDiv.innerHTML = '<div style="color: red;">Error: ' + data.error + '</div>';
+        }
+        
+    } catch (error) {
+        document.getElementById('musicResourceResult').innerHTML = '<div style="color: red;">Connection error</div>';
+    }
+});
+
+// Function to show music resources section
+function showMusicResourcesSection() {
+    document.getElementById('musicResourcesSection').style.display = 'block';
+}
+    addCloseButton('musicResourcesSection');  // ← Added 7.16
+
+// Load all music resources 7.15
+async function loadAllMusic() {
+    try {
+        const response = await fetch('/tutor-api/music-resources');
+        const data = await response.json();
+        displayMusic(data);
+    } catch (error) {
+        document.getElementById('musicList').innerHTML = '<p>Error loading music.</p>';
+    }
+}
+
+// Display music resources
+function displayMusic(data) {
+    const musicListDiv = document.getElementById('musicList');
+    
+    if (data.success && data.resources.length > 0) {
+        const musicCards = data.resources.map(music => `
+            <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; background: #f9f9f9;">
+                <h3><a href="${music.url}" target="_blank">🎵 ${music.title}</a></h3>
+                <p><strong>Type:</strong> ${music.music_type} | <strong>Genre:</strong> ${music.genre || 'Not specified'}</p>
+                <p><strong>Language:</strong> ${music.language || 'Not specified'} | <strong>Duration:</strong> ${music.duration || 'Not specified'}</p>
+                <p>${music.description || 'No description provided'}</p>
+                <small>Added: ${new Date(music.created_at).toLocaleDateString()}</small>
+            </div>
+        `).join('');
+        
+        musicListDiv.innerHTML = musicCards;
+    } else {
+        musicListDiv.innerHTML = '<p>No music resources found. Be the first to add some!</p>';
+    }
+}
+
+// Show browse music section
+function showBrowseMusicSection() {
+    document.getElementById('browseMusicSection').style.display = 'block';
+    loadAllMusic(); // Auto-load when section opens
+    addCloseButton('browseMusicSection');  // ← Added 7.16
+
+}
+    </script>
+</body>
+</html>

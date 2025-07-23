@@ -2,9 +2,14 @@
 <html>
 <head>
     <title>Tutor & Student Login </title>
+<!--<script src="https://cdn.tailwindcss.com"></script>-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 </head>
 <body>
-  <div id="loginSection">
+
+<div id="loginSection">
     <h2>Login</h2>    
     <form id="loginForm">
         <input type="email" id="email" placeholder="Email" required>
@@ -14,7 +19,20 @@
     
     <div id="result"></div>
 </div>
+<!--tailwind via CDN 7.18 --> 
+<!--<div id="loginSection">
+  <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow mt-10">
+    <h2 class="text-xl font-bold mb-6 text-center">Sign in to your account</h2>
+    <form id="loginForm" class="space-y-4">
+      <input class="w-full p-3 border rounded focus:outline-none focus:ring" type="email" id="email" placeholder="Email" required>
+      <input class="w-full p-3 border rounded focus:outline-none focus:ring" type="password" id="password" placeholder="Password" required>
+      <button class="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition" type="submit">Login</button>
+    </form>
+    <div id="result" class="mt-4"></div>
+  </div>
+</div>
 
+-->
 <div id="tutorMarketplace">
 	<button onclick="loadAllTutors()">Browse All Tutors</button>
 
@@ -29,10 +47,49 @@
     <div id="tutorList"></div>
 </div>
 -->
-
+<!--tailwind 7.18-->
+<!--<div id="registerSection" class="max-w-md mx-auto bg-white p-4 rounded-lg shadow mt-6 mb-6">
+  <h2 class="text-xl font-bold mb-4 text-center">Create Account</h2>
+  <form id="registerForm" class="space-y-3">
+    <input class="w-full p-2 border rounded focus:outline-none focus:ring" type="email" id="regEmail" placeholder="Email" required>
+    <input class="w-full p-2 border rounded focus:outline-none focus:ring" type="password" id="regPassword" placeholder="Password" required>
+    <select class="w-full p-2 border rounded focus:outline-none focus:ring" id="regRole" required>
+      <option value="">Choose your role</option>
+      <option value="student">I'm a Student</option>
+      <option value="tutor">I'm a Tutor</option>
+    </select>
+    <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition" type="submit">Sign Up</button>
+  </form>
+  <div id="registerResult" class="mt-3"></div>
+</div>
+-->
 
 <!-- Tutor Profile Creation Form -->
-<div id="tutorProfileSection" style="display: none;">
+<!--!!profile selection edit 7.21 to include subject--> 
+<!--7.22 commented out <div id="tutorProfileSection" style="display: none;">
+    <h2>Create Your Tutor Profile</h2>
+    <form id="tutorProfileForm">
+        
+<!-- NEW: Subject selection --
+        <label>What subjects do you teach?</label>
+        <div id="subjectCheckboxes" style="margin: 10px 0;">
+            <input type="checkbox" name="subjects" value="1" id="math"> <label for="math">Math</label><br>
+            <input type="checkbox" name="subjects" value="2" id="french"> <label for="french">French</label><br>
+            <input type="checkbox" name="subjects" value="3" id="piano"> <label for="piano">Piano</label><br>
+            <input type="checkbox" name="subjects" value="4" id="programming"> <label for="programming">Programming</label><br>
+        </div>
+        
+        <textarea id="bio" placeholder="Tell students about yourself, your experience, teaching style..." rows="4" required></textarea>
+        <input type="number" id="hourlyRate" placeholder="Hourly Rate ($)" min="10" max="200" step="0.50" required>
+        <input type="tel" id="phone" placeholder="Phone Number (optional)">
+        <button type="submit">Create Profile</button>
+    </form>
+    <div id="profileResult"></div>
+</div>
+
+-->
+
+<!--original???<div id="tutorProfileSection" style="display: none;">
     <h2>Create Your Tutor Profile</h2>
     <form id="tutorProfileForm">
         <textarea id="bio" placeholder="Tell students about yourself, list the subjects you teach, your experience, teaching style..." rows="4" required></textarea>
@@ -41,8 +98,43 @@
         <button type="submit">Create Profile</button>
     </form>
     <div id="profileResult"></div>
-</div>
+</div>-->
 <!--show all  Tutor -->
+<!--made on 7.22-->
+<div id="tutorProfileSection" style="display: none;">
+    <h2>Create Your Tutor Profile</h2>
+    <form id="tutorProfileForm">
+        
+        <!-- NEW: Subject selection checkboxes -->
+        <!-- This shows when user clicks "Create Tutor Profile" -->
+        <fieldset style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+            <legend><strong>What subjects do you teach?</strong></legend>
+            <div id="subjectCheckboxes">
+                <!-- Each checkbox has value="1" matching your subjects table IDs -->
+                <input type="checkbox" name="subjects" value="1" id="math"> 
+                <label for="math">Math</label><br>
+                
+                <input type="checkbox" name="subjects" value="2" id="french"> 
+                <label for="french">French</label><br>
+                
+                <input type="checkbox" name="subjects" value="3" id="piano"> 
+                <label for="piano">Piano</label><br>
+                
+                <input type="checkbox" name="subjects" value="4" id="programming"> 
+                <label for="programming">Programming</label><br>
+            </div>
+        </fieldset>
+        
+        <!-- EXISTING: Bio, rate, phone (unchanged) -->
+        <textarea id="bio" placeholder="Tell students about yourself, your experience, teaching style..." rows="4" required></textarea>
+        <input type="number" id="hourlyRate" placeholder="Hourly Rate ($)" min="10" max="200" step="0.50" required>
+        <input type="tel" id="phone" placeholder="Phone Number (optional)">
+        
+        <button type="submit">Create Profile</button>
+    </form>
+    <div id="profileResult"></div>
+</div>
+
 
 
 <!-- Registration Form -->
@@ -60,6 +152,7 @@
     </form>
     <div id="registerResult"></div>
 </div>
+
 <!--search tutors 7.12-->
 <div id="tutorMarketplace">
     <h2>Find a Tutor</h2>
@@ -67,7 +160,9 @@
     <!-- Search form -->
     <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
         <input type="text" id="subjectSearch" placeholder="Search by subject (e.g., Math, Physics, Chemistry)" style="padding: 8px; width: 300px;">
+
 <!--price search 7.13 end @ select -->
+
     <select id="priceFilter" style="padding: 8px; margin-left: 10px;">
         <option value="">Any Price</option>
         <option value="under20">Under $20/hour</option>
@@ -80,7 +175,68 @@
     </div>
     
     <div id="tutorList"></div>
+<!--7.23 added for bettr tutor contact  -->
+<!-- NEW: Contact Modal (initially hidden) -->
+<div id="contactModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        
+        <!-- Modal Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <h2 id="modalTutorName" style="margin: 0; color: #2c5aa0;">Contact Tutor</h2>
+            <button onclick="closeContactModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+        </div>
+
+        <!-- Tutor Info Summary -->
+        <div id="modalTutorInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <!-- This will be filled by JavaScript -->
+        </div>
+
+        <!-- Contact Options -->
+        <div style="space-y: 15px;">
+            <!-- Email Section -->
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 18px; margin-right: 8px;">📧</span>
+                    <strong>Email</strong>
+                </div>
+                <div style="display: flex; align-items: center; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                    <span id="modalEmail" style="flex: 1; font-family: monospace;">tutor@email.com</span>
+                    <button id="emailButton" onclick="openEmail()" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 10px;">Email</button>
+                </div>
+            </div>
+
+            <!-- Phone Section -->
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 18px; margin-right: 8px;">📞</span>
+                    <strong>Phone</strong>
+                </div>
+                <div style="display: flex; align-items: center; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                    <span id="modalPhone" style="flex: 1; font-family: monospace;">Phone number</span>
+                    <button id="phoneButton" onclick="openPhone()" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 10px;">Call</button>
+                </div>
+            </div>
+
+            <!-- Message Template -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 18px; margin-right: 8px;">💬</span>
+                    <strong>Message Template</strong>
+                </div>
+                <textarea id="messageTemplate" readonly style="width: 100%; height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: #f8f9fa; resize: none;">Hi! I found your tutoring profile and I'm interested in learning more about your teaching services. Could we schedule a time to discuss my learning goals and your availability? Thank you!</textarea>
+                <button onclick="copyMessage()" style="background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 5px; font-size: 12px;">Copy Message</button>
+            </div>
+        </div>
+
+        <!-- Close Button -->
+        <div style="text-align: center;">
+            <button onclick="closeContactModal()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Close</button>
+        </div>
+    </div>
+</div> 
 </div>
+
+
 <!-- Study Resources Section 7.13 -->
 <div id="resourcesSection" style="display: none;">
     <h2>Add Study Resource</h2>
@@ -442,7 +598,57 @@ function showTutorProfileOption() {
     addCloseButton('tutorProfileSection');  // ← Added 7.16
 
 }
+document.getElementById('tutorProfileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Get form values
+    const bio = document.getElementById('bio').value;
+    const hourlyRate = document.getElementById('hourlyRate').value;
+    const phone = document.getElementById('phone').value;
+    const token = localStorage.getItem('authToken');
+    
+    // Get selected subjects
+    const selectedSubjects = [];
+    const checkboxes = document.querySelectorAll('input[name="subjects"]:checked');
+    checkboxes.forEach(cb => selectedSubjects.push(parseInt(cb.value)));
 
+//debug 7.22
+    console.log('Selected subjects:', selectedSubjects);
+    console.log('Sending to server:', { bio, hourly_rate: hourlyRate, phone, subjects: selectedSubjects });
+    
+    const isEditMode = document.getElementById('tutorProfileForm').dataset.mode === 'edit';
+    const method = isEditMode ? 'PUT' : 'POST';
+
+    try {
+        const response = await fetch('/tutor-api/tutor-profile', {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                bio: bio,
+                hourly_rate: hourlyRate,
+                phone: phone,
+                subjects: selectedSubjects
+            })
+        });
+        
+        const data = await response.json();
+        const resultDiv = document.getElementById('profileResult');
+        
+        if (data.success) {
+            resultDiv.innerHTML = '<div style="color: green;">Profile created successfully!</div>';
+            document.getElementById('tutorProfileForm').reset();
+        } else {
+            resultDiv.innerHTML = '<div style="color: red;">Error: ' + data.error + '</div>';
+        }
+        
+    } catch (error) {
+        document.getElementById('profileResult').innerHTML = '<div style="color: red;">Connection error</div>';
+    }
+});
+/*commented out around 7.21? og code 
 // Handle tutor profile form submission
 document.getElementById('tutorProfileForm').addEventListener('submit', async function(e) {
     e.preventDefault(); // Stop form from refreshing page
@@ -452,6 +658,35 @@ document.getElementById('tutorProfileForm').addEventListener('submit', async fun
     const hourlyRate = document.getElementById('hourlyRate').value;
     const phone = document.getElementById('phone').value;
     const token = localStorage.getItem('authToken');
+
+//7.21 added subject 
+    // NEW: Get selected subjects
+    const selectedSubjects = [];
+    const checkboxes = document.querySelectorAll('input[name="subjects"]:checked');
+    checkboxes.forEach(cb => selectedSubjects.push(parseInt(cb.value)));
+    
+    const isEditMode = document.getElementById('tutorProfileForm').dataset.mode === 'edit';
+    const method = isEditMode ? 'PUT' : 'POST';
+
+    try {
+        const response = await fetch('/tutor-api/tutor-profile', {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                bio: bio,
+                hourly_rate: hourlyRate,
+                phone: phone,
+                subjects: selectedSubjects  // NEW: Include subjects
+            })
+        });
+        
+    }
+});
+//end edit 7.21
+
 
 //edit form handler 7.17 ends @ method
 const isEditMode = document.getElementById('tutorProfileForm').dataset.mode === 'edit';
@@ -487,7 +722,7 @@ const method = isEditMode ? 'PUT' : 'POST';
     }
  
 });
-
+*/
 
 
 //show all tutors 
@@ -510,12 +745,20 @@ function displayTutors(data) {
     if (data.success && data.tutors.length > 0) {
         // Build tutors first
         const tutorCards = data.tutors.map(tutor => `
-            <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
+<!--old            <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">-->
+		<div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; word-wrap: break-word; overflow-wrap: break-word;">
                 <h3>${tutor.email}</h3>
+                <!-- NEW:7.23 Show subjects taught -->
+                <p><strong>Teaches:</strong> 
+                    <span style="color: #2c5aa0; font-weight: bold;">
+                        ${tutor.subjects_taught || 'No subjects listed'}
+                    </span>
+                </p>
                 <p><strong>About:</strong> ${tutor.bio}</p>
                 <p><strong>Rate:</strong> $${tutor.hourly_rate}/hour</p>
                 <p><strong>Phone:</strong> ${tutor.phone || 'Not provided'}</p>
-                <button onclick="showContact('${tutor.email}', '${tutor.phone}')">Contact This Tutor</button>
+                <button onclick="showContact('${tutor.email}', '${tutor.phone}', {subjects: '${tutor.subjects_taught}', rate: '${tutor.hourly_rate}'})">Contact This Tutor</button>
+             <!--   <button onclick="showContact('${tutor.email}', '${tutor.phone}')">Contact This Tutor</button>-->
             </div>
         `).join('');
         
@@ -597,6 +840,103 @@ function showContact(email, phone) {
     
     alert(contactInfo);
 }
+
+//added 7.23 in addition to code in html afer tutorList
+//contact form 2.0 
+// NEW: Global variables to store current tutor info
+let currentTutorEmail = '';
+let currentTutorPhone = '';
+
+// NEW: Show the professional contact modal instead of ugly alert
+function showContact(email, phone, tutorData = null) {
+    // Store the contact info globally
+    currentTutorEmail = email;
+    currentTutorPhone = phone || 'Not provided';
+    
+    // Update modal content
+    document.getElementById('modalTutorName').textContent = `Contact ${email}`;
+    document.getElementById('modalEmail').textContent = email;
+    document.getElementById('modalPhone').textContent = currentTutorPhone;
+    
+    // Update tutor info summary (if we have tutor data from the card)
+    const tutorInfoDiv = document.getElementById('modalTutorInfo');
+    if (tutorData) {
+        tutorInfoDiv.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>📚 Teaches:</strong> ${tutorData.subjects || 'Not specified'}<br>
+                    <strong>💰 Rate:</strong> $${tutorData.rate}/hour
+                </div>
+            </div>
+        `;
+    } else {
+        // Fallback if no tutor data provided
+        tutorInfoDiv.innerHTML = `
+            <div style="text-align: center; color: #666;">
+                <em>Contact this tutor to discuss their subjects and rates</em>
+            </div>
+        `;
+    }
+    
+    // Show the modal
+    document.getElementById('contactModal').style.display = 'block';
+}
+
+// NEW: Close the modal
+function closeContactModal() {
+    document.getElementById('contactModal').style.display = 'none';
+}
+
+// NEW: Open email client with tutor's email
+function openEmail() {
+    const subject = encodeURIComponent('Tutoring Inquiry');
+    const body = encodeURIComponent(document.getElementById('messageTemplate').value);
+    const mailtoLink = `mailto:${currentTutorEmail}?subject=${subject}&body=${body}`;
+    window.open(mailtoLink);
+}
+
+// NEW: Open phone app (works on mobile)
+function openPhone() {
+    if (currentTutorPhone && currentTutorPhone !== 'Not provided') {
+        window.open(`tel:${currentTutorPhone}`);
+    } else {
+        alert('No phone number available for this tutor.');
+    }
+}
+
+// NEW: Copy message template to clipboard
+function copyMessage() {
+    const messageText = document.getElementById('messageTemplate');
+    messageText.select();
+    messageText.setSelectionRange(0, 99999); // For mobile devices
+    
+    try {
+        document.execCommand('copy');
+        // Show brief feedback
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = '#28a745';
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '#6c757d';
+        }, 1000);
+    } catch (err) {
+        alert('Could not copy message. Please select and copy manually.');
+    }
+}
+
+// NEW: Close modal when clicking outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('contactModal');
+    if (event.target === modal) {
+        closeContactModal();
+    }
+}
+//end of contact
+
+
 
 //idthink this works rn
 async function editProfile(){

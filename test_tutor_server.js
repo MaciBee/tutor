@@ -5,14 +5,27 @@ const cors = require('cors');
 const bcrypt = require('bcrypt'); //hash
 const express = require('express');
 const mysql = require('mysql2');
+const helmet = require('helmet');
+const sanitizeHtml = require('sanitize-html');
+const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken'); //stay logged in 
-const JWT_SECRET = 'test-stuff'; // In production, use environment variable
+//const JWT_SECRET = 'test-stuff'; // In production, use environment variable
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    console.error('JWT_SECRET environment variable is required');
+    process.exit(1);
+}
 
 const app = express();
+app.use(helmet());
+
 
 app.use(cors()); // Add this line near the top of your server.js
 //post test middleware
 app.use(express.json());
+
+app.set('trust proxy', true);
+
 // Database connection using your .env variables
 const db = mysql.createConnection({
   host: process.env.TUTOR_DB_HOST,
@@ -77,26 +90,48 @@ app.get('/tutors', (req, res) => {
   const subject = req.query.subject;
   const priceFilter = req.query.price;
 
- let query = `
-    SELECT
-      tp.id as profile_id,
-      tp.bio,
-      tp.hourly_rate,
-      tp.phone,
-      tp.created_at,
-      u.email,
-      u.id as user_id
+let query = `
+    SELECT 
+        tp.id as profile_id,
+        tp.bio,
+        tp.hourly_rate,
+        tp.phone,
+        tp.created_at,
+        u.email,
+        u.id as user_id,
+        GROUP_CONCAT(s.name SEPARATOR ", ") as subjects_taught
     FROM tutor_profiles tp
     JOIN users u ON tp.user_id = u.id
+    LEFT JOIN tutor_subjects ts ON tp.id = ts.tutor_id
+    LEFT JOIN subjects s ON ts.subject_id = s.id
     WHERE tp.is_active = 1
-  `;
+`;
   
   let params = [];
  // Subject filter  7.12
-  if (subject) {
+/*  if (subject) {
     query += ` AND LOWER(tp.bio) LIKE LOWER(?)`;
     params.push(`%${subject}%`);
   }
+*/
+//replaced sub filter7.22
+// IMPROVED Subject filter - searches both structured subjects AND bio
+if (subject) {
+    // First try to find tutors who selected this subject in the database
+    query += ` AND (
+        tp.id IN (
+            SELECT DISTINCT ts.tutor_id 
+            FROM tutor_subjects ts 
+            JOIN subjects s ON ts.subject_id = s.id 
+            WHERE LOWER(s.name) LIKE LOWER(?)
+        )
+        OR LOWER(tp.bio) LIKE LOWER(?)
+    )`;
+    params.push(`%${subject}%`, `%${subject}%`);
+    // This searches BOTH:
+    // 1. Tutors who selected the subject in checkboxes
+    // 2. Tutors who mentioned it in their bio (fallback for old profiles)
+}
 
   // Price filter 7.13
   if (priceFilter) {
@@ -114,15 +149,25 @@ app.get('/tutors', (req, res) => {
       params.push(50);
     }
   }
-  query += ` ORDER BY tp.created_at DESC`;
+ // query += ` ORDER BY tp.created_at DESC`;
+ // replaced query+= from above w/ new one 7.23
+    query += ` 
+        GROUP BY tp.id, u.id
+        ORDER BY tp.created_at DESC
+    `;
   
   db.query(query, params, (err, results) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Database error' });
     }
-    
-    res.json({
+    //Sanitize user-generated fields before sending 7.18  
+  const sanitizedTutors = results.map(tutor => ({
+      ...tutor,
+      bio: tutor.bio ? sanitizeHtml(tutor.bio) : ''
+    }));
+ 
+   res.json({
       success: true,
       tutors: results,
       count: results.length
@@ -142,9 +187,34 @@ app.get('/tutors', (req, res) => {
 });*/
 
 //url parameteres
+//enhanced 7.21 
 app.get('/tutors/:subject', (req, res)=>{
    const subject = req.params.subject;
+    
+    const query = `
+        SELECT tp.*, ts.experience_level, s.name as subject_name, u.email
+        FROM tutor_profiles tp
+        JOIN tutor_subjects ts ON tp.id = ts.tutor_id  
+        JOIN subjects s ON ts.subject_id = s.id
+        JOIN users u ON tp.user_id = u.id
+        WHERE s.name = ? OR s.id = ?
+        AND tp.is_active = 1
+    `;
+    
+    db.query(query, [subject, subject], (err, results) => {
+        if (err) {
+            res.status(500).json({error: 'Database error'});
+        } else {
+            res.json({
+                success: true,
+                tutors: results
+            }); 
+        }
+    });
+});
+//also edited app.pst(/tutor/profile) to match 
 
+/*7.21 edit to make suj selection work- this was old code -no subj selection-
    db.query('SELECT * FROM tutors_subjects WHERE subject = ?', [subject], (err, results)=>{
      if (err) {
       res.status(500).json({error: 'Database error'});
@@ -152,7 +222,9 @@ app.get('/tutors/:subject', (req, res)=>{
 	res.json(results); 
    }
   });
-}); 
+});
+
+*/ 
 // Protected route - requires valid token
 app.get('/profile', authenticateToken, (req, res) => {
   // req.user contains the decoded token info (userId, email, role)
@@ -214,7 +286,13 @@ app.get('/study-resources', (req, res) => {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Database error' });
     }
-    
+//    
+    const sanitizedResources = results.map(resource => ({
+      ...resource,
+      title: resource.title ? sanitizeHtml(resource.title) : '',
+      description: resource.description ? sanitizeHtml(resource.description) : ''
+    }));
+
     res.json({
       success: true,
       resources: results,
@@ -232,7 +310,15 @@ app.get('/music-resources', (req, res) => {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Database error' });
       }
-      
+//
+    const sanitizedMusic = results.map(resource => ({
+      ...resource,
+      title: resource.title ? sanitizeHtml(resource.title) : '',
+      description: resource.description ? sanitizeHtml(resource.description) : '',
+      genre: resource.genre ? sanitizeHtml(resource.genre) : '',
+      music_type: resource.music_type ? sanitizeHtml(resource.music_type) : ''
+
+    }));      
       res.json({
         success: true,
         resources: results,
@@ -241,9 +327,16 @@ app.get('/music-resources', (req, res) => {
     }
   );
 });
+// Limit each IP to 10 registration requests per hour 7/17
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  message: { error: 'Too many accounts created from this IP, please try again later.' }
+});
 
 //post w/ hash
-app.post('/users', async (req, res) => {
+app.post('/users', registerLimiter, async (req, res) => {
+//app.post('/users', async (req, res) => {
   const { email, password, role } = req.body;
   
   // Simple validation
@@ -274,7 +367,15 @@ app.post('/users', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+// Limit each IP to 5 login requests per 15 minutes 7.17
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: { error: 'Too many login attempts. Please try again after 15 minutes.' }
+});
+
 //login auth
+//app.post('/auth/login', async (req, res) => {
 app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
   
@@ -333,7 +434,81 @@ app.post('/auth/login', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+//7.21 changed profile to inclde sub selection 
+app.post('/tutor-profile', authenticateToken, async (req, res) => {
+    const { bio, hourly_rate, phone, subjects } = req.body; // subjects is defined here
+    const user_id = req.user.userId;
 
+    // Validation
+    if (!bio || !hourly_rate) {
+        return res.status(400).json({ error: 'Bio and hourly rate are required' });
+    }
+
+    if (req.user.role !== 'tutor') {
+        return res.status(403).json({ error: 'Only tutors can create profiles' });
+    }
+
+    try {
+        // Check if user already has a profile
+        db.query('SELECT id FROM tutor_profiles WHERE user_id = ?', [user_id], (err, existing) => {
+            if (err) {
+                return res.status(500).json({ error: 'Database error' });
+            }
+
+            if (existing.length > 0) {
+                return res.status(400).json({ error: 'Profile already exists' });
+            }
+
+            // Create new profile
+            db.query(
+                'INSERT INTO tutor_profiles (user_id, bio, hourly_rate, phone) VALUES (?, ?, ?, ?)',
+                [user_id, bio, hourly_rate, phone],
+                (err, results) => {
+                    if (err) {
+                        console.error('Database error:', err);
+                        return res.status(500).json({ error: 'Failed to create profile' });
+                    }
+
+                    const profileId = results.insertId;
+                    
+                    // Save subjects if provided - subjects is accessible here
+                    if (subjects && subjects.length > 0) {
+                        const subjectInserts = subjects.map(subjectId => 
+                            [profileId, subjectId, 'intermediate']
+                        );
+                        
+                        db.query(
+                            'INSERT INTO tutor_subjects (tutor_id, subject_id, experience_level) VALUES ?',
+                            [subjectInserts],
+                            (err) => {
+                                if (err) {
+                                    console.error('Subject insert error:', err);
+                                }
+                                // Send response after subjects are saved
+                                res.json({
+                                    success: true,
+                                    message: 'Tutor profile created successfully',
+                                    profileId: profileId
+                                });
+                            }
+                        );
+                    } else {
+                        // No subjects selected, just send response
+                        res.json({
+                            success: true,
+                            message: 'Tutor profile created successfully',
+                            profileId: profileId
+                        });
+                    }
+                }
+            );
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+/*commented  7.21
 //tutor profile creation 
 // Protected route - only logged-in users can create profiles
 app.post('/tutor-profile', authenticateToken, async (req, res) => {
@@ -370,6 +545,23 @@ app.post('/tutor-profile', authenticateToken, async (req, res) => {
             return res.status(500).json({ error: 'Failed to create profile' });
           }
           
+//new 7.21
+                const profileId = results.insertId;
+                // NEW: Save subjects if provided
+                if (subjects && subjects.length > 0) {
+                    const subjectInserts = subjects.map(subjectId => 
+                        [profileId, subjectId, 'intermediate'] // default experience level
+                    );
+                    
+                    db.query(
+                        'INSERT INTO tutor_subjects (tutor_id, subject_id, experience_level) VALUES ?',
+                        [subjectInserts],
+                        (err) => {
+                            if (err) console.error('Subject insert error:', err);
+                        }
+                    );
+                }
+//end new here
           res.json({
             success: true,
             message: 'Tutor profile created successfully',
@@ -382,6 +574,10 @@ app.post('/tutor-profile', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+7.21 end comment */ 
+
+
 
 //udpate tutor profile 
 /*app.put('/tutor-profile', authenticateToken, async(req,res)=>{
@@ -429,6 +625,12 @@ app.get('/my-tutor-profile', authenticateToken, (req,res)=> {
 	if (results.length ===0){
 	   return res.status(404).json({error: 'no profile found'});
 	}
+//santize
+   const profile = results[0];
+   const sanitizedProfile = {
+       ...profile,
+       bio: profile.bio ? sanitizeHtml(profile.bio) : ''
+  };
 
 	res.json({
    	  success:true,

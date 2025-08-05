@@ -236,6 +236,73 @@
 </div> 
 </div>
 
+<!-- Tutor Availability Section 7.24-->
+<div id="availabilitySection" style="display: none;">
+    <h2>Set Your Teaching Availability</h2>
+    <p>Students will only be able to book during the times you set below.</p>
+    
+    <!-- Form to add availability -->
+    <form id="availabilityForm">
+        <label for="dayOfWeek"><strong>Day of Week:</strong></label>
+        <select id="dayOfWeek" required>
+            <option value="">Choose a day</option>
+            <option value="monday">Monday</option>
+            <option value="tuesday">Tuesday</option>
+            <option value="wednesday">Wednesday</option>
+            <option value="thursday">Thursday</option>
+            <option value="friday">Friday</option>
+            <option value="saturday">Saturday</option>
+            <option value="sunday">Sunday</option>
+        </select>
+        
+        <label for="startTime"><strong>Start Time:</strong></label>
+        <input type="time" id="startTime" required>
+        
+        <label for="endTime"><strong>End Time:</strong></label>
+        <input type="time" id="endTime" required>
+        
+        <button type="submit">Add Availability</button>
+    </form>
+    
+    <div id="availabilityResult"></div>
+    
+    <!-- Display current availability -->
+    <h3>Your Current Availability</h3>
+    <div id="currentAvailability">
+        <!-- This will be filled by JavaScript -->
+    </div>
+</div>
+
+<!--Booking Modal 7.27 -->
+<div id="bookingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001;">
+    <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 20px; border-radius: 10px; width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3); margin-bottom: 20px;">
+        
+        <!-- Modal Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <h2 id="bookingTutorName" style="margin: 0; color: #28a745;">Book a Session</h2>
+            <button onclick="closeBookingModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+        </div>
+
+        <!-- Tutor Info -->
+        <div id="bookingTutorInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <!-- This will be filled by JavaScript -->
+        </div>
+
+        <!-- Available Time Slots -->
+        <div style="margin-bottom: 20px;">
+            <h3>Available Times</h3>
+            <div id="availableSlots">
+                Loading available times...
+            </div>
+        </div>
+
+        <!-- Close Button -->
+        <div style="text-align: center;">
+            <button onclick="closeBookingModal()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Close</button>
+        </div>
+    </div>
+</div>
+
 
 <!-- Study Resources Section 7.13 -->
 <div id="resourcesSection" style="display: none;">
@@ -527,6 +594,7 @@ function showLoggedInContent() {
 <!--            <button onclick="showTutorMarketplace()">Find Tutors</button>-->
             <button onclick="showTutorProfileOption()">Create Tutor Profile</button>
             <button onclick="editProfile()">Edit Profile</button>
+            <button onclick="showAvailabilitySection()">Set My Availability</button>  <!-- new 7.24 -->
             <button onclick="showResourcesSection()">Add Study Resource</button>
             <button onclick="showBrowseResourcesSection()">Browse Resources</button>
             <button onclick="showMusicResourcesSection()">Add Study Music</button>
@@ -754,10 +822,17 @@ function displayTutors(data) {
                         ${tutor.subjects_taught || 'No subjects listed'}
                     </span>
                 </p>
+		<!--7.24 Add availability display -->
+		<p><strong>Available:</strong> 
+    		   <span style="color: #28a745; font-weight: bold;">
+        	       ${tutor.availability_text || 'No times set'}
+    		   </span>
+		</p>
                 <p><strong>About:</strong> ${tutor.bio}</p>
                 <p><strong>Rate:</strong> $${tutor.hourly_rate}/hour</p>
                 <p><strong>Phone:</strong> ${tutor.phone || 'Not provided'}</p>
-                <button onclick="showContact('${tutor.email}', '${tutor.phone}', {subjects: '${tutor.subjects_taught}', rate: '${tutor.hourly_rate}'})">Contact This Tutor</button>
+<!--rip                <button onclick="showContact('${tutor.email}', '${tutor.phone}', {subjects: '${tutor.subjects_taught}', rate: '${tutor.hourly_rate}'})">Contact This Tutor</button>-->
+ 		<button onclick="showBookingModal('${tutor.profile_id}', '${tutor.email}', '${tutor.hourly_rate}')">Book Session </button> 
              <!--   <button onclick="showContact('${tutor.email}', '${tutor.phone}')">Contact This Tutor</button>-->
             </div>
         `).join('');
@@ -1046,6 +1121,244 @@ function hideAllSections() {
     document.getElementById('browseMusicSection').style.display = 'none';
 }
 
+//booking 7.25
+//function showBookingModal(tutorId, tutorEmail, hourlyRate){
+  //        alert(`Booking modal for tutor: ${tutorEmail}, Rate: $${hourlyRate}/hr, ID: ${tutorId}`);
+//}
+// Show booking modal for students 7.27
+function showBookingModal(tutorId, tutorEmail, hourlyRate, subjects) {
+    // Store tutor info for later use
+    window.currentBookingTutor = {
+        id: tutorId,
+        email: tutorEmail,
+        rate: hourlyRate,
+        subjects: subjects
+    };
+    
+    // Update modal content
+    document.getElementById('bookingTutorName').textContent = `Book Session with ${tutorEmail}`;
+    
+    // Update tutor info summary
+    const tutorInfoDiv = document.getElementById('bookingTutorInfo');
+    tutorInfoDiv.innerHTML = `
+        <div>
+            <strong>Tutor:</strong> ${tutorEmail}<br>
+            <strong>Teaches:</strong> ${subjects || 'Not specified'}<br>
+            <strong>Rate:</strong> $${hourlyRate}/hour
+        </div>
+    `;
+    
+    // Show the modal
+    document.getElementById('bookingModal').style.display = 'block';
+    
+    // Load available time slots (we'll create this function next)
+    loadAvailableSlots(tutorId);
+}
+
+
+
+
+// NEW: Close booking modal
+function closeBookingModal() {
+    document.getElementById('bookingModal').style.display = 'none';
+}
+
+// NEW: Placeholder for loading available slots
+//function loadAvailableSlots(tutorId) {
+  //  document.getElementById('availableSlots').innerHTML = 'Loading available times...';
+    // We'll add the real functionality next
+//}
+// NEW: Load available time slots for booking
+async function loadAvailableSlots(tutorId) {
+    try {
+        const response = await fetch(`/tutor-api/availability/${tutorId}`);
+        const data = await response.json();
+        
+        const slotsDiv = document.getElementById('availableSlots');
+        
+        if (data.success && data.availability.length > 0) {
+            const timeSlots = data.availability.map(slot => `
+                <button onclick="selectTimeSlot('${slot.day_of_week}', '${slot.start_time}', '${slot.end_time}')" 
+                        style="display: block; width: 100%; margin: 5px 0; padding: 10px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                    ${capitalizeFirst(slot.day_of_week)} ${formatTime(slot.start_time)} - ${formatTime(slot.end_time)}
+                </button>
+            `).join('');
+            
+            slotsDiv.innerHTML = timeSlots;
+        } else {
+            slotsDiv.innerHTML = '<p style="color: #666;">No available times set by this tutor.</p>';
+        }
+        
+    } catch (error) {
+        console.error('Error loading available slots:', error);
+        document.getElementById('availableSlots').innerHTML = '<p style="color: red;">Error loading available times.</p>';
+    }
+}
+//
+// Handle time slot selection with booking form 7.28
+function selectTimeSlot(dayOfWeek, startTime, endTime) {
+    // Store the selected time slot
+    window.selectedTimeSlot = {
+        day: dayOfWeek,
+        start: startTime,
+        end: endTime
+    };
+    
+    const tutor = window.currentBookingTutor;
+    
+    // Show booking form
+    const slotsDiv = document.getElementById('availableSlots');
+// In your selectTimeSlot function, replace the innerHTML with:
+slotsDiv.innerHTML = `
+    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <h4 style="margin: 0 0 10px 0; color: #28a745;">Selected Time Slot</h4>
+        <p style="margin: 0;"><strong>${capitalizeFirst(dayOfWeek)} ${formatTime(startTime)} - ${formatTime(endTime)}</strong></p>
+        <p style="margin: 5px 0 0 0; font-size: 14px;">Rate: $${tutor.rate}/hour</p>
+    </div>
+    
+    <h4 style="margin-bottom: 15px;">Tell ${tutor.email.split('@')[0]} about yourself:</h4>
+    
+    <div style="margin-bottom: 15px;">
+        <label><strong>What are you currently working on or studying?</strong></label>
+        <textarea id="currentWork" placeholder="e.g., Learning Python for my CS class, preparing for SATs, working on calculus homework..." 
+                  style="width: 100%; height: 60px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <label><strong>What specific challenge are you facing?</strong></label>
+        <textarea id="currentChallenge" placeholder="e.g., I understand basic Python syntax but get confused with functions and loops..." 
+                  style="width: 100%; height: 60px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <label><strong>What's your learning goal for this session?</strong></label>
+        <textarea id="learningGoal" placeholder="e.g., I want to understand how functions work and finish my calculator project..." 
+                  style="width: 100%; height: 60px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <label><strong>How long would you like the session to be?</strong></label>
+        <select id="sessionDuration" style="width: 100%; padding: 8px; margin-top: 5px;">
+            <option value="0.5">30 minutes - $${(tutor.rate * 0.5).toFixed(2)}</option>
+            <option value="1">1 hour - $${tutor.rate}</option>
+            <option value="1.5">1.5 hours - $${(tutor.rate * 1.5).toFixed(2)}</option>
+            <option value="2">2 hours - $${(tutor.rate * 2).toFixed(2)}</option>
+        </select>
+    </div>
+<!-- preferred time field 7.28 -->
+   <div style="margin-bottom: 15px;">
+       <label><strong>What specific time within ${capitalizeFirst(dayOfWeek)} ${formatTime(startTime)}-${formatTime(endTime)} works best for you?</strong></label>
+          <input type="text" id="preferredTime" placeholder="e.g., 2pm-4pm, around 10am, morning preferred, I'm flexible" 
+           style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required>
+      <small style="color: #666; font-size: 12px;">Help the tutor know your preferred time within their available window</small>
+</div>
+
+    
+    <button onclick="sendSessionRequest()" 
+            style="width: 100%; background: #007bff; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 16px;">
+        Send Session Request
+    </button>
+    
+    <button onclick="loadAvailableSlots(${tutor.id})" 
+            style="width: 100%; background: #6c757d; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+        ← Back to Time Selection
+    </button>
+`;
+
+}
+
+// Send session request with student introduction 7.28
+function sendSessionRequest() {
+    const tutor = window.currentBookingTutor;
+    const timeSlot = window.selectedTimeSlot;
+    
+    // Get all form values
+    const currentWork = document.getElementById('currentWork').value.trim();
+    const currentChallenge = document.getElementById('currentChallenge').value.trim();
+    const learningGoal = document.getElementById('learningGoal').value.trim();
+    const duration = document.getElementById('sessionDuration').value;
+    const preferredTime = document.getElementById('preferredTime').value.trim();
+    
+
+    // Basic validation
+    if (!currentWork || !currentChallenge || !learningGoal || !preferredTime) {       
+        alert('Please fill in all the introduction fields so the tutor can understand your needs.');
+        return;
+    }
+    
+    // Calculate total amount
+    const totalAmount = (tutor.rate * parseFloat(duration)).toFixed(2);
+    
+    // Show detailed confirmation
+    const confirmMessage = `Session Request Summary:
+
+Tutor: ${tutor.email}
+Time: ${capitalizeFirst(timeSlot.day)} ${formatTime(timeSlot.start)} - ${formatTime(timeSlot.end)}
+Preferred Time: ${preferredTime}
+Duration: ${duration} hours ($${totalAmount})
+
+Your Introduction:
+- Working on: ${currentWork}
+- Challenge: ${currentChallenge}  
+- Goal: ${learningGoal}
+
+Send this request to ${tutor.email}?`;
+    
+if (confirm(confirmMessage)) {
+    // Show loading state
+    const originalButton = document.querySelector('button[onclick="sendSessionRequest()"]');
+    originalButton.textContent = 'Sending Request...';
+    originalButton.disabled = true;
+    
+    // Send actual request to backend
+    sendRequestToServer(tutor, timeSlot, currentWork, currentChallenge, learningGoal, duration, totalAmount, preferredTime);
+}
+
+}
+//7.28
+// Send request to server (FRONTEND SIDE)
+async function sendRequestToServer(tutor, timeSlot, currentWork, currentChallenge, learningGoal, duration, totalAmount, preferredTime) {
+    const token = localStorage.getItem('authToken');
+    
+    try {
+        const response = await fetch('/tutor-api/session-request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                tutor_id: tutor.id,
+                tutor_email: tutor.email,
+                day_of_week: timeSlot.day,
+                start_time: timeSlot.start,
+                end_time: timeSlot.end,
+                duration: duration,
+                current_work: currentWork,
+                current_challenge: currentChallenge,
+                learning_goal: learningGoal,
+                preferred_time: preferredTime,  
+                total_amount: totalAmount
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`✅ Request sent successfully! ${tutor.email} will receive your introduction and respond via email.`);
+            closeBookingModal();
+        } else {
+            alert(`❌ Error sending request: ${data.error}`);
+        }
+        
+    } catch (error) {
+        console.error('Error sending session request:', error);
+        alert('❌ Connection error. Please try again.');
+    }
+}
+
+
+
 // Handle study resource form submission 7.13
 document.getElementById('resourceForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -1090,6 +1403,148 @@ document.getElementById('resourceForm').addEventListener('submit', async functio
         document.getElementById('resourceResult').innerHTML = '<div style="color: red;">Connection error</div>';
     }
 });
+//availability
+// Show the availability section 7.24
+function showAvailabilitySection() {
+    document.getElementById('availabilitySection').style.display = 'block';
+    addCloseButton('availabilitySection'); // Add close button like other sections
+    loadCurrentAvailability(); // Load tutor's existing availability
+}
+
+// NEW: Load and display tutor's current availability
+async function loadCurrentAvailability() {
+    const token = localStorage.getItem('authToken');
+    
+    try {
+        const response = await fetch('/tutor-api/my-availability', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+        
+        const data = await response.json();
+        const availabilityDiv = document.getElementById('currentAvailability');
+        
+        if (data.success && data.availability.length > 0) {
+            // Display each availability slot
+            const availabilityCards = data.availability.map(slot => `
+                <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                    <span><strong>${capitalizeFirst(slot.day_of_week)}</strong>: ${formatTime(slot.start_time)} - ${formatTime(slot.end_time)}</span>
+                    <button onclick="deleteAvailability(${slot.id})" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+                </div>
+            `).join('');
+            
+            availabilityDiv.innerHTML = availabilityCards;
+        } else {
+            availabilityDiv.innerHTML = '<p style="color: #666;"><em>No availability set yet. Add some times above!</em></p>';
+        }
+        
+    } catch (error) {
+        console.error('Error loading availability:', error);
+        document.getElementById('currentAvailability').innerHTML = '<p style="color: red;">Error loading availability.</p>';
+    }
+}
+
+// NEW: Helper function to capitalize first letter
+function capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// NEW: Helper function to format time (converts 09:00:00 to 9:00 AM)
+function formatTime(timeString) {
+    const time = new Date('2000-01-01 ' + timeString);
+    return time.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+    });
+}
+
+//
+// NEW: Handle availability form submission
+document.getElementById('availabilityForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Get form values
+    const dayOfWeek = document.getElementById('dayOfWeek').value;
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    const token = localStorage.getItem('authToken');
+    
+    // Basic validation
+    if (!dayOfWeek || !startTime || !endTime) {
+        document.getElementById('availabilityResult').innerHTML = '<div style="color: red;">Please fill in all fields.</div>';
+        return;
+    }
+    
+    if (startTime >= endTime) {
+        document.getElementById('availabilityResult').innerHTML = '<div style="color: red;">End time must be after start time.</div>';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/tutor-api/availability', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                day_of_week: dayOfWeek,
+                start_time: startTime,
+                end_time: endTime
+            })
+        });
+        
+        const data = await response.json();
+        const resultDiv = document.getElementById('availabilityResult');
+        
+        if (data.success) {
+            resultDiv.innerHTML = '<div style="color: green;">Availability added successfully!</div>';
+            document.getElementById('availabilityForm').reset(); // Clear form
+            loadCurrentAvailability(); // Refresh the availability list
+        } else {
+            resultDiv.innerHTML = '<div style="color: red;">Error: ' + data.error + '</div>';
+        }
+        
+    } catch (error) {
+        console.error('Error adding availability:', error);
+        document.getElementById('availabilityResult').innerHTML = '<div style="color: red;">Connection error</div>';
+    }
+});
+//
+// Delete an availability slot 7.24
+async function deleteAvailability(availabilityId) {
+    if (!confirm('Are you sure you want to delete this availability slot?')) {
+        return; // User cancelled
+    }
+    
+    const token = localStorage.getItem('authToken');
+    
+    try {
+        const response = await fetch(`/tutor-api/availability/${availabilityId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Refresh the availability list
+            loadCurrentAvailability();
+        } else {
+            alert('Error deleting availability: ' + data.error);
+        }
+        
+    } catch (error) {
+        console.error('Error deleting availability:', error);
+        alert('Connection error while deleting availability');
+    }
+}
+
+
 
 // Function to show the resources section
 function showResourcesSection() {

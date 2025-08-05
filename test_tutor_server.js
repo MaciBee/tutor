@@ -10,6 +10,10 @@ const sanitizeHtml = require('sanitize-html');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken'); //stay logged in 
 //const JWT_SECRET = 'test-stuff'; // In production, use environment variable
+//const nodemailer = require('nodemailer');7.28
+const fs = require('fs'); //logging 7.28
+const path = require('path'); //7.28
+
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
     console.error('JWT_SECRET environment variable is required');
@@ -19,6 +23,11 @@ if (!JWT_SECRET) {
 const app = express();
 app.use(helmet());
 
+// Create logs directory if it doesn't exist 7.28
+const logsDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir);
+}
 
 app.use(cors()); // Add this line near the top of your server.js
 //post test middleware
@@ -27,22 +36,34 @@ app.use(express.json());
 app.set('trust proxy', true);
 
 // Database connection using your .env variables
-const db = mysql.createConnection({
-  host: process.env.TUTOR_DB_HOST,
-  user: process.env.TUTOR_DB_USER,
-  password: process.env.TUTOR_DB_PASS,
-  database: process.env.TUTOR_DB_NAME,
-  port: process.env.TUTOR_DB_PORT
+const db = mysql.createPool({
+    host: process.env.TUTOR_DB_HOST,
+    user: process.env.TUTOR_DB_USER,
+    password: process.env.TUTOR_DB_PASS,
+    database: process.env.TUTOR_DB_NAME,
+    port: process.env.TUTOR_DB_PORT,
+    connectionLimit: 10,
+    reconnect: true
+});
+// Test database pool
+db.getConnection((err, connection) => {
+    if (err) {
+        console.error('Database pool connection failed:', err);
+    } else {
+        console.log('Connected to MySQL database pool!');
+        connection.release(); // Important: release the test connection
+    }
 });
 
 // Test database connection
-db.connect((err) => {
-  if (err) {
-    console.error('Database connection failed:', err);
-  } else {
-    console.log('Connected to MySQL database!');
-  }
-});
+//db.connect((err) => {
+//  if (err) {
+//    console.error('Database connection failed:', err);
+//  } else {
+//    console.log('Connected to MySQL database!');
+//  }
+//});
+
 // Middleware to verify JWT token
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -71,6 +92,7 @@ app.get('/api/hello', (req, res) => {
   res.json({ message: 'Hello from API!' });
 });
 
+/*
 // New route that gets real data from database
 app.get('/users', (req, res) => {
   db.query('SELECT * FROM users', (err, results) => {
@@ -82,7 +104,7 @@ app.get('/users', (req, res) => {
     }
   });
 });
-
+*/
 //show only tutors 
 // w/ rate and stuff
 // Public endpoint - anyone can view tutors (no auth required)
@@ -90,6 +112,7 @@ app.get('/tutors', (req, res) => {
   const subject = req.query.subject;
   const priceFilter = req.query.price;
 
+// Enhanced query that includes availability 7.24
 let query = `
     SELECT 
         tp.id as profile_id,
@@ -99,13 +122,30 @@ let query = `
         tp.created_at,
         u.email,
         u.id as user_id,
-        GROUP_CONCAT(s.name SEPARATOR ", ") as subjects_taught
+        GROUP_CONCAT(DISTINCT s.name SEPARATOR ", ") as subjects_taught,
+        GROUP_CONCAT(DISTINCT 
+            CASE 
+                WHEN ta.day_of_week IS NOT NULL 
+                THEN CONCAT(
+                    UPPER(SUBSTRING(ta.day_of_week, 1, 1)), 
+                    LOWER(SUBSTRING(ta.day_of_week, 2)), 
+                    ' ', 
+                    TIME_FORMAT(ta.start_time, '%l:%i%p'), 
+                    '-', 
+                    TIME_FORMAT(ta.end_time, '%l:%i%p')
+                )
+                ELSE NULL 
+            END 
+            SEPARATOR " | "
+        ) as availability_text
     FROM tutor_profiles tp
     JOIN users u ON tp.user_id = u.id
     LEFT JOIN tutor_subjects ts ON tp.id = ts.tutor_id
     LEFT JOIN subjects s ON ts.subject_id = s.id
+    LEFT JOIN tutor_availability ta ON tp.id = ta.tutor_id AND ta.is_available = 1
     WHERE tp.is_active = 1
 `;
+
   
   let params = [];
  // Subject filter  7.12
@@ -169,8 +209,10 @@ if (subject) {
  
    res.json({
       success: true,
-      tutors: results,
-      count: results.length
+      tutors: sanitizedTutors,  // ←7.31 changed to use sanitize results
+      count: sanitizedTutors.length
+//      tutors: results,
+//      count: results.length
     });
   });
 });
@@ -333,7 +375,7 @@ const registerLimiter = rateLimit({
   max: 10,
   message: { error: 'Too many accounts created from this IP, please try again later.' }
 });
-
+/*
 //post w/ hash
 app.post('/users', registerLimiter, async (req, res) => {
 //app.post('/users', async (req, res) => {
@@ -367,6 +409,69 @@ app.post('/users', registerLimiter, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+*/
+//7.31 improved post user password lenght and other stuff 
+app.post('/users', registerLimiter, async (req, res) => {
+  const { email, password, role } = req.body;
+  
+  // Enhanced validation
+  if (!email || !password || !role) {
+    return res.status(400).json({ error: 'Email, password, and role are required' });
+  }
+  
+  // Email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+  
+  // Role validation
+  const validRoles = ['student', 'tutor'];
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({ error: 'Role must be student or tutor' });
+  }
+  
+  // Password strength
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
+  }
+  
+  try {
+    // Check for existing email
+    db.query('SELECT id FROM users WHERE email = ?', [email], async (err, existingUsers) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Server error' });
+      }
+      
+      if (existingUsers.length > 0) {
+        return res.status(400).json({ error: 'Email already registered' });
+      }
+      
+      // Hash password and create user
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      db.query('INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)', 
+        [email, hashedPassword, role], (err, results) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Failed to create user' });
+        } else {
+          res.json({ 
+            success: true, 
+            message: 'User created successfully! Please log in.'
+          });
+        }
+      });
+    });
+    
+  } catch (error) {
+    console.error('Hashing error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 // Limit each IP to 5 login requests per 15 minutes 7.17
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -634,8 +739,10 @@ app.get('/my-tutor-profile', authenticateToken, (req,res)=> {
 
 	res.json({
    	  success:true,
-	  profile: results[0]
-    	});
+//	  profile: results[0]
+          profile: sanitizedProfile  // ← Fixed: 8.1.25
+  
+  	});
       }
     );
 });
@@ -668,6 +775,264 @@ app.put('/tutor-profile', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+// add availabiliy 7.24
+// NEW: Get tutor's availability schedule
+app.get('/my-availability', authenticateToken, (req, res) => {
+    const user_id = req.user.userId;
+    
+    // First, get the tutor's profile ID from their user ID
+    db.query('SELECT id FROM tutor_profiles WHERE user_id = ?', [user_id], (err, profileResults) => {
+        if (err) {
+            console.error('Database error finding tutor profile:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        
+        if (profileResults.length === 0) {
+            return res.status(404).json({ error: 'Tutor profile not found' });
+        }
+        
+        const tutorId = profileResults[0].id;
+        
+        // Now get their availability
+        db.query(
+            'SELECT * FROM tutor_availability WHERE tutor_id = ? AND is_available = 1 ORDER BY day_of_week, start_time',
+            [tutorId],
+            (err, availabilityResults) => {
+                if (err) {
+                    console.error('Database error loading availability:', err);
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                
+                res.json({
+                    success: true,
+                    availability: availabilityResults,
+                    count: availabilityResults.length
+                });
+            }
+        );
+    });
+});
+//7.27 
+//Get specific tutor's availability for booking
+app.get('/availability/:tutorId', (req, res) => {
+    const tutorId = req.params.tutorId;
+    
+    db.query(
+        'SELECT * FROM tutor_availability WHERE tutor_id = ? AND is_available = 1 ORDER BY day_of_week, start_time',
+        [tutorId],
+        (err, results) => {
+            if (err) {
+                console.error('Database error loading tutor availability:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            res.json({
+                success: true,
+                availability: results,
+                count: results.length
+            });
+        }
+    );
+});
+
+
+//7.24
+// NEW: Add tutor availability (no /tutor-api prefix since that gets stripped)
+app.post('/availability', authenticateToken, (req, res) => {
+    const { day_of_week, start_time, end_time } = req.body;
+    const user_id = req.user.userId;
+    
+    // Validation
+    if (!day_of_week || !start_time || !end_time) {
+        return res.status(400).json({ error: 'Day, start time, and end time are required' });
+    }
+    
+    // Check if user is a tutor
+    if (req.user.role !== 'tutor') {
+        return res.status(403).json({ error: 'Only tutors can set availability' });
+    }
+    
+    try {
+        // First, get the tutor's profile ID
+        db.query('SELECT id FROM tutor_profiles WHERE user_id = ?', [user_id], (err, profileResults) => {
+            if (err) {
+                console.error('Database error finding tutor profile:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            if (profileResults.length === 0) {
+                return res.status(400).json({ error: 'You must create a tutor profile first' });
+            }
+            
+            const tutorId = profileResults[0].id;
+            
+            // Insert the availability
+            db.query(
+                'INSERT INTO tutor_availability (tutor_id, day_of_week, start_time, end_time, is_available) VALUES (?, ?, ?, ?, 1)',
+                [tutorId, day_of_week, start_time, end_time],
+                (err, results) => {
+                    if (err) {
+                        console.error('Database error adding availability:', err);
+                        // Check if it's a duplicate time slot error
+                        if (err.code === 'ER_DUP_ENTRY') {
+                            return res.status(400).json({ error: 'You already have availability set for this time slot' });
+                        }
+                        return res.status(500).json({ error: 'Failed to add availability' });
+                    }
+                    
+                    res.json({
+                        success: true,
+                        message: 'Availability added successfully',
+                        availabilityId: results.insertId
+                    });
+                }
+            );
+        });
+        
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+//
+// NEW: Delete tutor availability
+app.delete('/availability/:id', authenticateToken, (req, res) => {
+    const availabilityId = req.params.id;
+    const user_id = req.user.userId;
+    
+    try {
+        // First verify this availability belongs to the logged-in tutor
+        db.query(
+            `SELECT ta.id FROM tutor_availability ta 
+             JOIN tutor_profiles tp ON ta.tutor_id = tp.id 
+             WHERE ta.id = ? AND tp.user_id = ?`,
+            [availabilityId, user_id],
+            (err, results) => {
+                if (err) {
+                    console.error('Database error:', err);
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                
+                if (results.length === 0) {
+                    return res.status(404).json({ error: 'Availability not found or not yours' });
+                }
+                
+                // Delete the availability
+                db.query('DELETE FROM tutor_availability WHERE id = ?', [availabilityId], (err) => {
+                    if (err) {
+                        console.error('Database error deleting availability:', err);
+                        return res.status(500).json({ error: 'Failed to delete availability' });
+                    }
+                    
+                    res.json({
+                        success: true,
+                        message: 'Availability deleted successfully'
+                    });
+                });
+            }
+        );
+        
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// 7.28 Handle session request submission (SERVER SIDE)
+app.post('/session-request', authenticateToken, async (req, res) => {
+const { 
+    tutor_id, 
+    tutor_email,
+    day_of_week, 
+    start_time, 
+    end_time, 
+    duration, 
+    current_work, 
+    current_challenge, 
+    learning_goal,
+    preferred_time,
+    total_amount 
+} = req.body;
+    
+    const student_id = req.user.userId;
+    const student_email = req.user.email;
+    
+    try {
+        // Create the email content
+        const emailContent = `
+Hello!
+
+You have received a tutoring session request through your autodidacting.org profile.
+STUDENT DETAILS:
+Student: ${student_email}
+Available Window: ${day_of_week.charAt(0).toUpperCase() + day_of_week.slice(1)} ${start_time} - ${end_time}
+Preferred Time: ${req.body.preferred_time}
+Duration: ${duration} hours
+Total Rate: $${total_amount}
+
+
+WHAT THE STUDENT IS WORKING ON:
+${current_work}
+
+THEIR CURRENT CHALLENGE:
+${current_challenge}
+
+THEIR LEARNING GOAL:
+${learning_goal}
+
+---
+
+TO RESPOND:
+Reply directly to this email or contact the student at: ${student_email}
+        `;
+
+        // TEMPORARY: Log instead of sending email
+        console.log('\n=== EMAIL THAT WOULD BE SENT ===');
+        console.log('To:', tutor_email);
+        console.log('From:', student_email);
+        console.log('Subject: Tutoring Session Request -', day_of_week, start_time);
+        console.log('\nContent:');
+        console.log(emailContent);
+        console.log('=== END EMAIL ===\n');
+// NEW: Also save to log file 7.28
+const timestamp = new Date().toISOString();
+const logEntry = `
+=== BOOKING REQUEST ${timestamp} ===
+Student: ${student_email}
+Tutor: ${tutor_email}
+Requested: ${day_of_week.charAt(0).toUpperCase() + day_of_week.slice(1)} ${start_time}-${end_time}
+Preferred: ${preferred_time}
+Duration: ${duration} hours ($${total_amount})
+
+Working on: ${current_work}
+Challenge: ${current_challenge}
+Goal: ${learning_goal}
+
+STATUS: PENDING (needs manual email)
+=== END REQUEST ===
+
+`;
+
+const logFile = path.join(__dirname, 'logs', 'booking_requests.log');
+fs.appendFileSync(logFile, logEntry);
+console.log('📝 Request logged to file:', logFile);
+
+        
+        res.json({
+            success: true,
+            message: 'Session request logged successfully'
+        });
+        
+    } catch (error) {
+        console.error('Error processing session request:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to process session request'
+        });
+    }
+});
+
+
 
 
 // add study resource 7.13

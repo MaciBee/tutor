@@ -1031,7 +1031,63 @@ console.log('📝 Request logged to file:', logFile);
         });
     }
 });
+//8.5
+// NEW: Create student profile
+app.post('/student-profile', authenticateToken, (req, res) => {
+    console.log('🔍 Student profile request received');
+    console.log('🔍 User from token:', req.user);
+    console.log('🔍 Request body:', req.body);
 
+    console.log('🔍 User role from token:', req.user.role);
+    console.log('🔍 User email from token:', req.user.email);
+
+    const { grade_level, learning_goals, current_subjects, learning_style, academic_background, why_need_help, phone } = req.body;
+    const user_id = req.user.userId;
+    
+    // Check if user is a student
+    if (req.user.role !== 'student') {
+        return res.status(403).json({ error: 'Only students can create student profiles' });
+    }
+    
+    // Validation
+    if (!grade_level || !learning_goals || !current_subjects || !learning_style || !academic_background || !why_need_help) {
+        return res.status(400).json({ error: 'All fields except phone are required' });
+    }
+    
+    try {
+        // Check if student already has a profile
+        db.query('SELECT id FROM student_profiles WHERE user_id = ?', [user_id], (err, existing) => {
+            if (err) {
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            if (existing.length > 0) {
+                return res.status(400).json({ error: 'Profile already exists' });
+            }
+            
+            // Create new student profile
+            db.query(
+                'INSERT INTO student_profiles (user_id, grade_level, phone, learning_goals, current_subjects, learning_style, academic_background, why_need_help) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [user_id, grade_level, phone, learning_goals, current_subjects, learning_style, academic_background, why_need_help],
+                (err, results) => {
+                    if (err) {
+                        console.error('Database error:', err);
+                        return res.status(500).json({ error: 'Failed to create student profile' });
+                    }
+                    
+                    res.json({
+                        success: true,
+                        message: 'Student profile created successfully',
+                        profileId: results.insertId
+                    });
+                }
+            );
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 
 

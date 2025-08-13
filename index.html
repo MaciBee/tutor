@@ -7,9 +7,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 </head>
+
 <body>
 
+<!-- NEW: Landing Page Section -->
+<div id="landingPage">
+    <!-- Hero Section -->
+
+    <!-- How It Works Section -->
+    <section style="padding: 5px 5px; background: #f8f9fa;">
+        <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
+            <h3 style="font-size: 2em; margin: 0 0 40px 0; color: #333;">Connect With Personalized Tutors</h2>
+            
+        </div>
+    </section>
+</div>
+
 <div id="loginSection">
+
     <h2>Login</h2>    
     <form id="loginForm">
         <input type="email" id="email" placeholder="Email" required>
@@ -19,6 +34,7 @@
     
     <div id="result"></div>
 </div>
+
 <!--tailwind via CDN 7.18 --> 
 <!--<div id="loginSection">
   <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow mt-10">
@@ -31,15 +47,16 @@
     <div id="result" class="mt-4"></div>
   </div>
 </div>
-
 -->
-<div id="tutorMarketplace">
+<!--8.6<div id="tutorMarketplace">
 	<button onclick="loadAllTutors()">Browse All Tutors</button>
 
 	<div class="content">
 
 	<div id="tutorList"></div> 
 </div>
+-->
+
 <!--
 <div id="tutorMarketplace">
     <h2>Find a Tutor</h2>
@@ -48,6 +65,7 @@
 </div>
 -->
 <!--tailwind 7.18-->
+
 <!--<div id="registerSection" class="max-w-md mx-auto bg-white p-4 rounded-lg shadow mt-6 mb-6">
   <h2 class="text-xl font-bold mb-4 text-center">Create Account</h2>
   <form id="registerForm" class="space-y-3">
@@ -127,7 +145,7 @@
         
         <!-- EXISTING: Bio, rate, phone (unchanged) -->
         <textarea id="bio" placeholder="Tell students about yourself, your experience, teaching style..." rows="4" required></textarea>
-        <input type="number" id="hourlyRate" placeholder="Hourly Rate ($)" min="10" max="200" step="0.50" required>
+        <input type="number" id="hourlyRate" placeholder="Hourly Rate ($)" min="0" max="200" step="0.50" required>
         <input type="tel" id="phone" placeholder="Phone Number (optional)">
         
         <button type="submit">Create Profile</button>
@@ -139,6 +157,7 @@
 
 <!-- Registration Form -->
 <div id="registerSection">
+
     <h2>Create Account</h2>
     <form id="registerForm">
         <input type="email" id="regEmail" placeholder="Email" required>
@@ -152,6 +171,71 @@
     </form>
     <div id="registerResult"></div>
 </div>
+
+
+<!--student profile 8.5-->
+<!-- NEW: Student Profile Creation Form -->
+<div id="studentProfileSection" style="display: none;">
+    <h2>Create Your Student Profile</h2>
+    <p>Help tutors understand your learning goals and how they can best help you.</p>
+    
+    <form id="studentProfileForm">
+        <div style="margin-bottom: 15px;">
+            <label><strong>What grade level or academic background are you?</strong></label>
+            <select id="gradeLevel" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+                <option value="">Choose your level</option>
+                <option value="High School">High School</option>
+                <option value="College Freshman">College Freshman</option>
+                <option value="College Sophomore">College Sophomore</option>
+                <option value="College Junior">College Junior</option>
+                <option value="College Senior">College Senior</option>
+                <option value="Graduate Student">Graduate Student</option>
+                <option value="Adult Learner">Adult Learner</option>
+                <option value="Professional">Working Professional</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label><strong>What are your main learning goals?</strong></label>
+            <textarea id="learningGoals" placeholder="e.g., I want to build websites, pass my calculus exam, learn Spanish for travel..." 
+                      style="width: 100%; height: 60px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label><strong>What subjects are you currently working on?</strong></label>
+            <textarea id="currentSubjects" placeholder="e.g., Python programming, Algebra 2, SAT prep, Spanish conversation..." 
+                      style="width: 100%; height: 60px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label><strong>How do you learn best?</strong></label>
+            <textarea id="learningStyle" placeholder="e.g., I need lots of practice problems, I learn better with visual examples, I prefer step-by-step explanations..." 
+                      style="width: 100%; height: 60px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label><strong>Tell tutors about your academic background</strong></label>
+            <textarea id="academicBackground" placeholder="e.g., Computer Science major at State University, homeschooled student, returning to school after 10 years..." 
+                      style="width: 100%; height: 60px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label><strong>Why do you need tutoring help right now?</strong></label>
+            <textarea id="whyNeedHelp" placeholder="e.g., Struggling with my CS homework, want to get ahead in math, preparing for a big exam..." 
+                      style="width: 100%; height: 60px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label><strong>Phone Number (optional)</strong></label>
+            <input type="tel" id="studentPhone" placeholder="Your phone number" 
+                   style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+
+        <button type="submit">Create Profile</button>
+    </form>
+    <div id="studentProfileResult"></div>
+</div>
+
 
 <!--search tutors 7.12-->
 <div id="tutorMarketplace">
@@ -464,6 +548,15 @@
 </div>
 
     <script>
+
+console.log('🚀 Script starting to load...');
+/*function showStudentProfileOption() {
+    document.getElementById('studentProfileSection').style.display = 'block';
+    addCloseButton('studentProfileSection');
+}
+*/
+console.log('✅ showStudentProfileOption defined');
+
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault(); // Stop form from refreshing page
 
@@ -497,6 +590,9 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     // Save token to browser storage
     localStorage.setItem('authToken', data.token);
     localStorage.setItem('userEmail', data.user.email);
+    //8.5
+    localStorage.setItem('userRole', data.user.role);
+
     
     // Show success and update UI
     resultDiv.innerHTML = `<div class="success">Login successful! Welcome ${data.user.email}</div>`;
@@ -537,6 +633,8 @@ function checkLoginStatus() {
     }
 }
 
+//old showLoggedin before tutor and students sepearted 
+/*
 
 function showLoggedInContent() {
     const userEmail = localStorage.getItem('userEmail');
@@ -545,13 +643,13 @@ function showLoggedInContent() {
     const loggedInDiv = document.createElement('div');
     loggedInDiv.id = 'loggedInContent';
     loggedInDiv.innerHTML = `
-        <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0;">
+ <!--       <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h2>Welcome back, ${userEmail}!</h2>
             <button onclick="viewProfile()">My Profile</button>
-	   <!--deleted the brose all tutors 7.16 but is still shows broswer-->
-<!--           <button onclick="showTutorMarketplace()">Browse Tutors</button>-->
+<!-- OLD COMMEN	          <button onclick="showTutorMarketplace()">Browse Tutors</button>
             <button onclick="logout()">Logout</button>
-        </div>
+        </div>-->
+
     `;
     
     // Add it to the page if not already there
@@ -559,7 +657,47 @@ function showLoggedInContent() {
         document.body.appendChild(loggedInDiv);
     }
 }
+*/
 
+//8.5
+function showLoggedInContent() {
+    const userEmail = localStorage.getItem('userEmail');
+    const userRole = localStorage.getItem('userRole');
+    
+    let roleButtons = '';
+    
+    if (userRole === 'student') {
+        roleButtons = `
+            <button onclick="showStudentProfileOption()">Create Student Profile</button>
+            <button onclick="showTutorMarketplace()">Find Tutors</button>
+            <button onclick="showBrowseResourcesSection()">Browse Resources</button>
+            <button onclick="showBrowseMusicSection()">Browse Study Music</button>
+        `;
+    } else if (userRole === 'tutor') {
+        roleButtons = `
+            <button onclick="showTutorProfileOption()">Create Tutor Profile</button>
+            <button onclick="editProfile()">Edit Profile</button>
+            <button onclick="showAvailabilitySection()">Set My Availability</button>
+            <button onclick="showResourcesSection()">Add Study Resource</button>
+            <button onclick="showMusicResourcesSection()">Add Study Music</button>
+        `;
+    }
+    
+    const loggedInDiv = document.createElement('div');
+    loggedInDiv.id = 'loggedInContent';
+    loggedInDiv.innerHTML = `
+        <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h2>Welcome back, ${userEmail}! (${userRole})</h2>
+            <button onclick="viewProfile()">My Profile</button>
+            ${roleButtons}
+            <button onclick="logout()">Logout</button>
+        </div>
+    `;
+    
+    if (!document.getElementById('loggedInContent')) {
+        document.body.appendChild(loggedInDiv);
+    }
+}
 
 //addedhideLogin sec and shloWloginSec 7.15
 function hideLoginSections() {
@@ -581,6 +719,8 @@ function hideLoggedInContent() {
 }
 //login con
 
+//WtF DO IVE 2 SHOW LOGINCON? 
+/*
 function showLoggedInContent() {
     const userEmail = localStorage.getItem('userEmail');
     
@@ -588,25 +728,28 @@ function showLoggedInContent() {
     loggedInDiv.id = 'loggedInContent';
     loggedInDiv.innerHTML = `
 
-        <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0;">
+<!--        <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h2>Welcome back, ${userEmail}!</h2>
             <button onclick="viewProfile()">My Profile</button>
-<!--            <button onclick="showTutorMarketplace()">Find Tutors</button>-->
+<!--            <button onclick="showTutorMarketplace()">Find Tutors</button>--
             <button onclick="showTutorProfileOption()">Create Tutor Profile</button>
             <button onclick="editProfile()">Edit Profile</button>
-            <button onclick="showAvailabilitySection()">Set My Availability</button>  <!-- new 7.24 -->
+            <button onclick="showAvailabilitySection()">Set My Availability</button>  
             <button onclick="showResourcesSection()">Add Study Resource</button>
             <button onclick="showBrowseResourcesSection()">Browse Resources</button>
             <button onclick="showMusicResourcesSection()">Add Study Music</button>
             <button onclick="showBrowseMusicSection()">Browse Study Music Library</button>
             <button onclick="logout()">Logout</button>
-        </div>
+        </div>-->
+
     `;
     
     if (!document.getElementById('loggedInContent')) {
         document.body.appendChild(loggedInDiv);
     }
 }
+*/
+
 // A close button to sections 7.16
 function addCloseButton(sectionId) {
     const section = document.getElementById(sectionId);
@@ -753,8 +896,9 @@ document.getElementById('tutorProfileForm').addEventListener('submit', async fun
         
     }
 });
-//end edit 7.21
+console.log('✅ Point 3');
 
+//end edit 7.21
 
 //edit form handler 7.17 ends @ method
 const isEditMode = document.getElementById('tutorProfileForm').dataset.mode === 'edit';
@@ -1356,6 +1500,93 @@ async function sendRequestToServer(tutor, timeSlot, currentWork, currentChalleng
         alert('❌ Connection error. Please try again.');
     }
 }
+//8.6🧑‍🎓
+function showStudentProfileOption() {
+    document.getElementById('studentProfileSection').style.display = 'block';
+    addCloseButton('studentProfileSection');
+    
+    // NEW: Attach event listener when form becomes visible
+    const form = document.getElementById('studentProfileForm');
+    console.log('🔍 Form now visible, attaching listener...');
+    
+    // Remove any existing listener (prevent duplicates)
+    const newForm = form.cloneNode(true);
+    form.parentNode.replaceChild(newForm, form);
+    
+    // Add fresh event listener
+newForm.addEventListener('submit', async function(e) {
+    console.log('🔍 Form submission started!');
+    e.preventDefault();
+    
+    // Get form values
+    const gradeLevel = document.getElementById('gradeLevel').value;
+    const learningGoals = document.getElementById('learningGoals').value.trim();
+    const currentSubjects = document.getElementById('currentSubjects').value.trim();
+    const learningStyle = document.getElementById('learningStyle').value.trim();
+    const academicBackground = document.getElementById('academicBackground').value.trim();
+    const whyNeedHelp = document.getElementById('whyNeedHelp').value.trim();
+    const phone = document.getElementById('studentPhone').value.trim();
+    const token = localStorage.getItem('authToken');
+    
+    console.log('🔍 All form values:', {
+        gradeLevel, learningGoals, currentSubjects, 
+        learningStyle, academicBackground, whyNeedHelp, phone
+    });
+    console.log('🔍 Auth token exists:', !!token);
+    
+    // Validation
+    if (!gradeLevel || !learningGoals || !currentSubjects || !learningStyle || !academicBackground || !whyNeedHelp) {
+        console.log('❌ Validation failed - missing required fields');
+        alert('Please fill in all required fields.');
+        return;
+    }
+    console.log('✅ Validation passed');
+    
+    // Network request
+    console.log('🔍 Making API request to /tutor-api/student-profile');
+    
+    try {
+        const response = await fetch('/tutor-api/student-profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                grade_level: gradeLevel,
+                learning_goals: learningGoals,
+                current_subjects: currentSubjects,
+                learning_style: learningStyle,
+                academic_background: academicBackground,
+                why_need_help: whyNeedHelp,
+                phone: phone
+            })
+        });
+        
+        console.log('🔍 API Response status:', response.status);
+        console.log('🔍 API Response ok:', response.ok);
+        
+        const data = await response.json();
+        console.log('🔍 API Response data:', data);
+        
+        // Handle response
+        const resultDiv = document.getElementById('studentProfileResult');
+        if (data.success) {
+            console.log('✅ Success! Profile created');
+            resultDiv.innerHTML = '<div style="color: green;">Student profile created successfully!</div>';
+        } else {
+            console.log('❌ Server returned error:', data.error);
+            resultDiv.innerHTML = '<div style="color: red;">Error: ' + data.error + '</div>';
+        }
+        
+    } catch (error) {
+        console.log('❌ Network error:', error);
+        alert('Connection error: ' + error.message);
+    }
+});
+
+
+}
 
 
 
@@ -1698,6 +1929,9 @@ function showBrowseMusicSection() {
     loadAllMusic(); // Auto-load when section opens
     addCloseButton('browseMusicSection');  // ← Added 7.16
 
+}
+function testFunction() {
+    alert('Test works!');
 }
     </script>
 </body>
